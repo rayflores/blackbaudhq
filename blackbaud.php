@@ -63,13 +63,13 @@
 	            <input type="password" name="bbhq_apikey" class="regular-text bbhq_apikey" placeholder="API Key here"/>
 	        </p>    
 			<a class="button go" >Login to BlackbaudHQ</a>
+		</div>
 			<div class="LoaderBalls1">
 				<div class="LoaderBalls1__item"></div>
 				<div class="LoaderBalls1__item"></div>
 				<div class="LoaderBalls1__item"></div>
 			</div>
-			</p>
-		</div>
+
         <p class="next_step_1" style="display:none">Next Step: <br/>
             <a class="getusers button">Get New Members</a>
 			<div class="LoaderBalls2">
