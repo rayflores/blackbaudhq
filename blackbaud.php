@@ -42,7 +42,7 @@
 	/**
 	 * Display a custom menu page
 	 */
-	function blackbaud_menu_page_callback() {
+	function blackbaud_menu_page_callback() {		
 		?>
 			<h1>BlackbuadHQ User Sync</h1>
         <div class="notice notice-success loggedin" style="display:none;">
@@ -119,9 +119,7 @@
 		//	Database Id:	
 		//  NationalRenderersAssociationI
 		
-//		$databaseId = "NationalRenderersAssociationI";
 		$databaseId = $dbid;
-//		$apiKey     = "QZ9ZNlbAubcoMYhDwrbOlnPbKem3K1f0D+LwUeJdsqw=";
 		$apiKey     = $apikey;
 		
 		// Set initial endpoint
@@ -144,12 +142,14 @@
     }
     
 	add_action( 'wp_ajax_get_bbhq_users', 'get_bbhq_users' );	
-	function get_bbhq_users(){	
+	function get_bbhq_users(){
+		// 	    set_transient( 'bbhq_dbid', $dbid, 24 * HOUR_IN_SECONDS );
+		//	    set_transient( 'bbhq_apikey', $apikey, 24 * HOUR_IN_SECONDS );
 		require( plugin_dir_path( __FILE__ ) . 'utils/utils.php' );
 		require( plugin_dir_path( __FILE__ ) . 'lib/nusoap.php' );
 		
-		$databaseId = "NationalRenderersAssociationI";
-		$apiKey     = "QZ9ZNlbAubcoMYhDwrbOlnPbKem3K1f0D+LwUeJdsqw=";
+		$databaseId = get_transient( 'bbhq_dbid' );
+		$apiKey     = get_transient( 'bbhq_apikey' );
 		
 		// Set initial endpoint
 		$endpoint = "https://sna.etapestry.com/v3messaging/service?WSDL";
