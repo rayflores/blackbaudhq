@@ -38,15 +38,21 @@ jQuery(document).ready(function ($) {
                 'action': 'get_bbhq_users',
             },
             success:function(response) {
-                console.log(response)
+                console.log(response);
+                $('table.new_users_table').append(response);
                 // This outputs the result of the ajax request
                 if ( response.success ) {
                     $('.LoaderBalls2').css('display', 'none');
-                    $('.next_step_2').show();
+                    if ( response.new_users ) {
+                        $('table.new_users_table').append(response.new_users);
+                    }
+                    if ( response.existing_users ) {
+                        $('table.existing_users_table').append(response.existing_users);
+                    }
                 }
             },
             error: function(errorThrown){
-                console.log(errorThrown);
+                // console.log(errorThrown);
             }
         });
     });

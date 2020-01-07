@@ -57,10 +57,10 @@
             -->
 	        <p>Enter Your Database ID and your API Key below</p>
 	        <p>
-	            <input type="text" name="bbhq_dbid" class="regular-text bbhq_dbid" placeholder="Database ID here"/>
+	            <input type="text" name="bbhq_dbid" class="regular-text bbhq_dbid" placeholder="Database ID here" value="<?php echo get_transient( 'bbhq_dbid' ) ? get_transient( 'bbhq_dbid' ) : ''; ?>"/>
 	        </p>
 	        <p>
-	            <input type="password" name="bbhq_apikey" class="regular-text bbhq_apikey" placeholder="API Key here"/>
+	            <input type="password" name="bbhq_apikey" class="regular-text bbhq_apikey" placeholder="API Key here" value="<?php echo get_transient( 'bbhq_apikey' ) ? get_transient( 'bbhq_apikey' ) : ''; ?>"/>
 	        </p>    
 			<a class="button go" >Login to BlackbaudHQ</a>
 		</div>
@@ -70,7 +70,7 @@
 				<div class="LoaderBalls1__item"></div>
 			</div>
 
-        <p class="next_step_1" style="display:none">Next Step: <br/>
+        <p class="next_step_1" style="/*display:none*/">Next Step: <br/>
             <a class="getusers button">Get New Members</a>
 			<div class="LoaderBalls2">
 				<div class="LoaderBalls2__item"></div>
@@ -143,8 +143,6 @@
     
 	add_action( 'wp_ajax_get_bbhq_users', 'get_bbhq_users' );	
 	function get_bbhq_users(){
-		// 	    set_transient( 'bbhq_dbid', $dbid, 24 * HOUR_IN_SECONDS );
-		//	    set_transient( 'bbhq_apikey', $apikey, 24 * HOUR_IN_SECONDS );
 		require( plugin_dir_path( __FILE__ ) . 'utils/utils.php' );
 		require( plugin_dir_path( __FILE__ ) . 'lib/nusoap.php' );
 		
@@ -216,16 +214,27 @@
 				$new_users[] .= $user_id;
 			}
 		}
+		$new_user_html = '';
+		foreach ( $new_users as $new_user ){
+		    $user = get_user_by( 'ID', $new_user );
+		
+			$new_user_html .= '<tr><td><a href="'.get_edit_user_link($user->ID).'">'.$user->ID .'</a></td><td>'.$user->user_login.'</td><td>'.$user->first_name.'</td><td>'.$user->last_name.'</td></tr>';	
+		}
+		$existing_user_html = '';
+		foreach ( $existing_users as $existing_user ){
+		    $user = get_user_by( 'ID', $existing_user);
+		    $existing_user_html .= '<tr><td><a href="'.get_edit_user_link($user->ID).'">'.$user->ID .'</a></td><td>'.$user->user_login.'</td><td>'.$user->first_name.'</td><td>'.$user->last_name.'</td></tr>';
+        }
 		$send_response = array(
 		  'success' => true,
-          'new_users'   => $new_users,
-          'existing_users' => $existing_users
+          'new_users'   => $new_user_html,
+          'existing_users' => $existing_user_html
         );
+	
+		wp_send_json( $send_response );
 		// Call logout method
-		stopEtapestrySession( $nsc );
+		stopEtapestrySession($nsc);
 		
-		wp_send_json( $send_response );		
-			
 	}
 	function add_user_to_wp( $user_email, $user_firstName, $user_lastName ){
 		$userdata = array(
