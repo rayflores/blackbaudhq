@@ -44,9 +44,11 @@ jQuery(document).ready(function ($) {
                 if ( response.success ) {
                     $('.LoaderBalls2').css('display', 'none');
                     if ( response.new_users ) {
+                        $('.newUsersTable').show();
                         $('table.new_users_table').append(response.new_users);
                     }
                     if ( response.existing_users ) {
+                        $('.existingUsersTable').show();
                         $('table.existing_users_table').append(response.existing_users);
                     }
                 }

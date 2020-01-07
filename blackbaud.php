@@ -1,7 +1,14 @@
 <?php
+
 /**
- * Plugin Name: Blackbaudhq Get New Users
+ * Plugin Name: BlackbaudHQ Get New Users
+ * Plugin URI: https://rayflores.com/plugins/wcpas/
+ * Description: Add users from eTapestry API ( BlackbaudHQ ), step through
+ * Version: 0.1.1
+ * Author: Ray Flores
+ * Author URI: http://rayflores.com
  */
+
 	
 	function register_baluckbaud_menu_page(){
 		add_menu_page(
@@ -70,32 +77,38 @@
 				<div class="LoaderBalls1__item"></div>
 			</div>
 
-        <p class="next_step_1" style="/*display:none*/">Next Step: <br/>
+        <p class="next_step_1" style="display:none">Next Step: <br/>
             <a class="getusers button">Get New Members</a>
 			<div class="LoaderBalls2">
 				<div class="LoaderBalls2__item"></div>
 				<div class="LoaderBalls2__item"></div>
 				<div class="LoaderBalls2__item"></div>
 			</div>
-        </p>
-        <p>
-            <table class="table-responsive new_users_table">
-            <th>ID</th>
-            <th>Username</th>
-            <th>First Name</th>
-            <th>Last Name</th>
-            
+        </p> 
+        <div class="newUsersTable">
+            <h2>New Users Inserted:</h2>
+            <p>
+                <table class="table-responsive new_users_table">
+                <th>ID</th>
+                <th>Username</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                
+                </table>
+            </p>
+        </div>
+        <div class="existingUsersTable">
+            <h2>Existing Users Found:</h2>
+            <p>
+            <table class="table-responsive existing_users_table">
+                <th>ID</th>
+                <th>Username</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+    
             </table>
-        </p>
-        <p>
-        <table class="table-responsive existing_users_table">
-            <th>ID</th>
-            <th>Username</th>
-            <th>First Name</th>
-            <th>Last Name</th>
-
-        </table>
-        </p>
+            </p>
+        </div>
 		<?php
 		
 	}
