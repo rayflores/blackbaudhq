@@ -85,7 +85,7 @@
 				<div class="LoaderBalls2__item"></div>
 			</div>
         </p> 
-        <div class="newUsersTable">
+        <div class="newUsersTable" style="display: none;">
             <h2>New Users Inserted:</h2>
             <p>
                 <table class="table-responsive new_users_table">
@@ -97,7 +97,7 @@
                 </table>
             </p>
         </div>
-        <div class="existingUsersTable">
+        <div class="existingUsersTable" style="display: none;">
             <h2>Existing Users Found:</h2>
             <p>
             <table class="table-responsive existing_users_table">
