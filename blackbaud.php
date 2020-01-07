@@ -48,14 +48,28 @@
         <div class="notice notice-success loggedin" style="display:none;">
             <p><strong>Logged into BlackbaudHQ successfully!</strong></p>
         </div>
-        <p>
-		<a class="button go" >Login to BlackbaudHQ</a>
-		<div class="LoaderBalls1">
-			<div class="LoaderBalls1__item"></div>
-			<div class="LoaderBalls1__item"></div>
-			<div class="LoaderBalls1__item"></div>
+		<div class="enter_creds">
+          <!--  //	API keys / Database
+            //  API Key:
+            //  QZ9ZNlbAubcoMYhDwrbOlnPbKem3K1f0D+LwUeJdsqw=
+            //	Database Id:
+            //  NationalRenderersAssociationI
+            -->
+	        <p>Enter Your Database ID and your API Key below</p>
+	        <p>
+	            <input type="text" name="bbhq_dbid" class="regular-text bbhq_dbid" placeholder="Database ID here"/>
+	        </p>
+	        <p>
+	            <input type="password" name="bbhq_apikey" class="regular-text bbhq_apikey" placeholder="API Key here"/>
+	        </p>    
+			<a class="button go" >Login to BlackbaudHQ</a>
+			<div class="LoaderBalls1">
+				<div class="LoaderBalls1__item"></div>
+				<div class="LoaderBalls1__item"></div>
+				<div class="LoaderBalls1__item"></div>
+			</div>
+			</p>
 		</div>
-		</p>
         <p class="next_step_1" style="display:none">Next Step: <br/>
             <a class="getusers button">Get New Members</a>
 			<div class="LoaderBalls2">
@@ -87,6 +101,12 @@
 	}
 	add_action( 'wp_ajax_login_bbhq', 'login_bbhq' );
 	function login_bbhq(){
+	    $dbid = $_REQUEST['dbid'];
+	    $apikey = $_REQUEST['apikey'];
+	    // store for a day
+	    set_transient( 'bbhq_dbid', $dbid, 24 * HOUR_IN_SECONDS );
+	    set_transient( 'bbhq_apikey', $apikey, 24 * HOUR_IN_SECONDS );
+	    	    
 		require( plugin_dir_path( __FILE__ ) . 'utils/utils.php' );
 		require( plugin_dir_path( __FILE__ ) . 'lib/nusoap.php' );
 		
@@ -99,8 +119,10 @@
 		//	Database Id:	
 		//  NationalRenderersAssociationI
 		
-		$databaseId = "NationalRenderersAssociationI";
-		$apiKey     = "QZ9ZNlbAubcoMYhDwrbOlnPbKem3K1f0D+LwUeJdsqw=";
+//		$databaseId = "NationalRenderersAssociationI";
+		$databaseId = $dbid;
+//		$apiKey     = "QZ9ZNlbAubcoMYhDwrbOlnPbKem3K1f0D+LwUeJdsqw=";
+		$apiKey     = $apikey;
 		
 		// Set initial endpoint
 		$endpoint = "https://sna.etapestry.com/v3messaging/service?WSDL";

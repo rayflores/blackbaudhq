@@ -3,11 +3,18 @@ jQuery(document).ready(function ($) {
     $('.go').on('click', function(){
         $('.LoaderBalls1').css('display','flex');
         $(this).hide();
+        $('.enter_creds').hide();
+        var dbid = $( '.bbhq_dbid' ).val();
+        var apikey = $( '.bbhq_apikey' ).val();
+        var data = {
+            'action' : 'login_bbhq',
+            'dbid' : dbid,
+            'apikey' : apikey,
+        };
         $.ajax({
-           url: ajaxurl,
-           data: {
-               'action': 'login_bbhq',
-           },
+            url: ajaxurl,
+            type: "post",
+            data: data,
             success:function(data) {
                 // This outputs the result of the ajax request
                 if ( data.results == 'success') {
