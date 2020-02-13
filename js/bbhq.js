@@ -35,7 +35,8 @@ jQuery(document).ready(function ($) {
         $.ajax({
             url: ajaxurl,
             data: {
-                'action': 'get_bbhq_users',
+                // 'action': 'get_bbhq_users',
+                'action': 'get_more_members',
             },
             success:function(response) {
                 console.log(response);
@@ -54,7 +55,7 @@ jQuery(document).ready(function ($) {
                 }
             },
             error: function(errorThrown){
-                // console.log(errorThrown);
+                console.log(errorThrown);
             }
         });
     });
