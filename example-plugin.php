@@ -108,11 +108,15 @@ class Example_Background_Processing {
 		
 		foreach ( $records as $_key => $record ) {
 			foreach ( $record['data'] as $data ) {
-				$firstName = $data['firstName'];
-				$lastName = $data['lastName'];
-				$email = $data['email'];
-				$user_array = array( $firstName, $lastName, $email );
-				$this->process_all->push_to_queue( $user_array );
+				if ( isset( $data['email'] ) ) { // is there an email 
+					if ( ! email_exists( $data['email'] ) ) { // user not already in the system
+						$firstName  = $data['firstName'];
+						$lastName   = $data['lastName'];
+						$email      = $data['email'];
+						$user_array = array( $firstName, $lastName, $email );
+						$this->process_all->push_to_queue( $user_array );
+					}
+				}
 			}
 		}
 		

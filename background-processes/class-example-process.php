@@ -24,6 +24,7 @@ class WP_Example_Process extends WP_Background_Process {
 	protected function task( $user_array ) {
 		
 		$this->really_long_running_task();
+		
 		$new_user = wp_insert_user(
 			array(
 				'user_login' => $user_array[2],
