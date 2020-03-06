@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Plugin Name: BlackbaudHQ Get New Users
+ * Plugin : BlackbaudHQ Get New Users
  * Plugin URI: https://rayflores.com/plugins/wcpas/
  * Description: Add users from eTapestry API ( BlackbaudHQ ), step through
  * Version: 0.1.1
@@ -31,10 +31,27 @@ class WP_Blackbaudhq_User_Sync {
 		add_action( 'wp_ajax_get_bbhq_users', array( $this, 'get_bbhq_users' ) );
 		add_action( 'wp_ajax_login_bbhq', array( $this, 'login_bbhq' ) );
 		add_action( 'admin_init', array( $this, 'check_roles' ) );
+		add_action( 'admin_init', array( $this, 'load_blackbaud_table' ) );
 		
 		add_action( 'plugins_loaded', array( $this, 'init' ) );
 		//add_action( 'admin_bar_menu', array( $this, 'admin_bar' ), 100 );
 		//add_action( 'init', array( $this, 'process_handler' ) );
+	}
+	public function load_blackbaud_table() {
+		global $wpdb;
+		$charset_collate = $wpdb->get_charset_collate();
+		// Essays Table
+		$blackbaud_table_name = $wpdb->prefix . 'blackbaud_users';
+		$sql                  = "CREATE TABLE $blackbaud_table_name (
+		id INT NOT NULL,
+		firstName tinytext NOT NULL,
+		lastName VARCHAR(255) NOT NULL,
+		email VARCHAR(320) NOT NULL,
+		PRIMARY KEY (id)
+		) $charset_collate;";
+		
+		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+		dbDelta( $sql );
 	}
 	/**
 	 * Init
@@ -66,15 +83,112 @@ class WP_Blackbaudhq_User_Sync {
 			6
 		);
 		add_submenu_page( 'blackbuadhq', 'tester', 'tester', 'manage_options', 'bbhq-tester', array( $this, 'render_tester_page' ) );
+//		add_submenu_page( 'blackbuadhq', 'tester', 'tester', 'manage_options', 'bbhq-tester', array( $this, 'get_more_members' ) );
 	}
 
 
 	function render_tester_page() {
-		echo 'hi';
+			global $wpdb;
+			$total_response = array();
+			require( plugin_dir_path( __FILE__ ) . 'utils/utils.php' );
+			require( plugin_dir_path( __FILE__ ) . 'lib/nusoap.php' );
+			
+			$databaseId = get_transient( 'bbhq_dbid' ) ? get_transient( 'bbhq_dbid' ) : 'NationalRenderersAssociationI';
+			$apiKey     = get_transient( 'bbhq_apikey' ) ? get_transient( 'bbhq_apikey' ) : 'QZ9ZNlbAubcoMYhDwrbOlnPbKem3K1f0D+LwUeJdsqw=';
+			
+			// Set initial endpoint
+			$endpoint = "https://sna.etapestry.com/v3messaging/service?WSDL";
+			
+			// Instantiate nusoap_client
+			$nsc = new nusoap_client( $endpoint, true );
+			
+			// Did an error occur?
+			checkStatus( $nsc );
+			
+			// Invoke apiKeyLogin method
+			$newEndpoint = $nsc->call( "apiKeyLogin", array( $databaseId, $apiKey ) );
+			
+			// Did a soap fault occur?
+			checkStatus( $nsc );
+			
+			// Determine if the apiKeyLogin method returned a value...this will occur
+			// when the database you are trying to access is located at a different
+			// environment that can only be accessed using the provided endpoint
+			if ( $newEndpoint != "" ) {
+				
+				// Instantiate nusoap_client with different endpoint
+				$nsc = new nusoap_client( $newEndpoint, true );
+				
+				// Did an error occur?
+				checkStatus( $nsc );
+				
+				// Invoke apiKeyLogin method
+				$nsc->call( "apiKeyLogin", array( $databaseId, $apiKey ) );
+				
+				// Did a soap fault occur?
+				checkStatus( $nsc );
+			}
+			
+			// Initialize parameters
+			$categoryName = "Custom Testing Queries";
+//		$queryName    = "Website Access";
+			$queryName    = "Active Individuals";
+			
+			$request          = array();
+			$request["start"] = 0;
+			$request["count"] = 100;
+			$request["query"] = "$categoryName::$queryName";
+			
+			// Invoke getExistingQueryResults method
+            $first_response = array();
+			$response1 = $nsc->call( "getExistingQueryResults", array( $request ) );
+			$first_response['1'] = $response1;
+			// Did a soap fault occur?
+			checkStatus( $nsc );
+			
+			// Attempt to retrieve next page results
+			if ( $response1['pages'] > 1 ) {
+				$hasMore = true;
+				$resp    = 2;
+				$following_response = array();
+				do {
+					// Invoke getNextQueryResults method
+					$response2 = $nsc->call( "getNextQueryResults", array() );
+					$following_response[$resp] = $response2;
+					// Did a soap fault occur?
+					checkStatus( $nsc );
+					
+					// Invoke hasMoreQueryResults method
+					$hasMore = $nsc->call( "hasMoreQueryResults", array() );
+					
+					// Did a soap fault occur?
+					checkStatus( $nsc );
+					
+					$resp ++;
+					
+				} while ( $hasMore );
+			}
+			$total_response = array_merge( $first_response, $following_response );
+			
+			foreach ( $total_response as $_key => $record ) {
+				foreach ( $record['data'] as $data ) {
+					$firstName = $data['firstName'];
+					$lastName = $data['lastName'];
+					$email = $data['email'];
+					$user_array = array( 'firstName' => $firstName, 'lastName' => $lastName, 'email' => $email );
+					print_r( $user_array );
+					echo '<br/>';
+				}
+			}
+			
+			return $total_response;
+			// Call logout method
+			stopEtapestrySession($nsc);
+		}
 		
-	}
 
 	function get_more_members() {
+	    global $wpdb;
 		require( plugin_dir_path( __FILE__ ) . 'utils/utils.php' );
 		require( plugin_dir_path( __FILE__ ) . 'lib/nusoap.php' );
 		
@@ -116,11 +230,12 @@ class WP_Blackbaudhq_User_Sync {
 		
 		// Initialize parameters
 		$categoryName = "Custom Testing Queries";
-		$queryName    = "Website Access";
+//		$queryName    = "Website Access";
+		$queryName    = "Active Individuals";
 		
 		$request          = array();
-		$request["start"] = $_REQUEST['start'] ? $_REQUEST['start'] : 0;
-		$request["count"] = $_REQUEST['count'] ? $_REQUEST['count'] : 100;
+		$request["start"] = 0;
+		$request["count"] = 100;
 		$request["query"] = "$categoryName::$queryName";
 
         // Invoke getExistingQueryResults method
@@ -128,52 +243,58 @@ class WP_Blackbaudhq_User_Sync {
 
         // Did a soap fault occur?
 		checkStatus( $nsc );
-
+		$blackbaud_table_name = $wpdb->prefix . 'blackbaud_users';
+		$delete = $wpdb->query("TRUNCATE TABLE $blackbaud_table_name");
+		foreach ( $response['data'] as $_key => $data ){
+			
+			$wpdb->insert(
+				$blackbaud_table_name,
+				array(
+					'id' => $data['id'],
+					'firstName'    => $data['firstName'],
+					'lastName'     => $data['lastName'],
+					'email'         => $data['email'],
+				)
+			);
+        }
         // set result in transients for later use
         $pages = $response['pages'];
-        set_transient( 'response_page_pages_', $pages, MONTH_IN_SECONDS );
-		$resp           = 1;
-		$init_transient = 'response_page_' . $resp;
-		set_transient( $init_transient, $response['data'], MONTH_IN_SECONDS );
-		
-// Attempt to retrieve next page results
+
+        // Attempt to retrieve next page results
 		if ( $response['pages'] > 1 ) {
 			$hasMore = true;
-			$resp = 2;
+			$resp    = 2;
 			do {
-				WP_Example_Logger::really_long_running_task();
 				// Invoke getNextQueryResults method
 				$response = $nsc->call( "getNextQueryResults", array() );
-
 				
 				// Did a soap fault occur?
 				checkStatus( $nsc );
+				// if no, let's go!
+				foreach ( $response['data'] as $_key => $data ){
+					$blackbaud_table_name = $wpdb->prefix . 'blackbaud_users';
+					$wpdb->insert(
+						$blackbaud_table_name,
+						array(
+							'id' => $data['id'],
+							'firstName'    => $data['firstName'],
+							'lastName'     => $data['lastName'],
+							'email'         => $data['email'],
+						)
+					);
+				}
 				
-				$set_transient = 'response_page_' . $resp;
-				set_transient( $set_transient, $response['data'], MONTH_IN_SECONDS );
-				
-    			// Invoke hasMoreQueryResults method
+				// Invoke hasMoreQueryResults method
 				$hasMore = $nsc->call( "hasMoreQueryResults", array() );
 				
 				// Did a soap fault occur?
 				checkStatus( $nsc );
 				
-				$resp++;
+				$resp ++;
 				
 			} while ( $hasMore );
-			
 		}
-		
-		$success = array(
-		  'success' => true,
-			'pages' => $response['pages'],
-        );
-		wp_send_json( $success );
-		
-		
 		stopEtapestrySession( $nsc );
-		
-		
 	}
 	
 	function load_admin_scripts( $hook ) {

@@ -21,11 +21,20 @@ class WP_Example_Process extends WP_Background_Process {
 	 *
 	 * @return mixed
 	 */
-	protected function task( $item ) {
-		$message = $this->get_message( $item );
-
+	protected function task( $user_array ) {
+		
 		$this->really_long_running_task();
-		$this->log( $message );
+		$new_user = wp_insert_user(
+			array(
+				'user_login' => $user_array[2],
+				'user_pass' => NULL,
+				'first_name' => $user_array[0],
+				'last_name' => $user_array[1],
+				'user_email' => $user_array[2],
+				'role' => 'members'
+			)
+		);
+		$this->log( 'User ID: ' . $new_user );
 
 		return false;
 	}
