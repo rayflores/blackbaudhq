@@ -171,10 +171,11 @@ class WP_Blackbaudhq_User_Sync {
 			$total_response = array_merge( $first_response, $following_response );
 			
 			foreach ( $total_response as $_key => $record ) {
+			    print_r($record['count']);
 				foreach ( $record['data'] as $data ) {
 					$firstName = $data['firstName'];
 					$lastName = $data['lastName'];
-					$email = $data['email'];
+					$email = isset( $data['email'] ) ? $data['email'] : 'NOREPLY@no-email.org';
 					$user_array = array( 'firstName' => $firstName, 'lastName' => $lastName, 'email' => $email );
 					print_r( $user_array );
 					echo '<br/>';

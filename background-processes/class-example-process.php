@@ -35,7 +35,10 @@ class WP_Example_Process extends WP_Background_Process {
 				'role' => 'members'
 			)
 		);
-		$this->log( 'User ID: ' . $new_user );
+		// On success.
+		if ( ! is_wp_error( $new_user ) ) {
+			$this->log( 'User ID: ' . $new_user );
+		}
 
 		return false;
 	}
