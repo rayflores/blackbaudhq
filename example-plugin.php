@@ -30,8 +30,26 @@ class Example_Background_Processing {
 		add_action( 'admin_bar_menu', array( $this, 'admin_bar' ), 100 );
 		add_action( 'init', array( $this, 'process_handler' ) );
 		add_action( 'admin_init', array( $this, 'check_roles' ) );
+    // Hooks near the bottom of profile page (if current user) 
+    add_action('show_user_profile', array( $this, 'custom_user_profile_fields' ) );
+
+    // Hooks near the bottom of the profile page (if not current user) 
+    add_action('edit_user_profile', array( $this, 'custom_user_profile_fields' ) );
 	}
-	
+	public function custom_user_profile_fields( $user ){
+	  ?>
+        <table class="form-table">
+            <tr>
+                <th>
+                    <label for="ref">REF</label>
+                </th>
+                <td>
+                    <input type="text" name="ref" id="ref" value="<?php echo esc_attr( get_user_meta( $user->ID, 'ref', true ) ); ?>" class="regular-text"/>
+                </td>
+            </tr>
+        </table>
+    <?php
+  }
 	/**
 	 * Init
 	 */
@@ -80,6 +98,12 @@ class Example_Background_Processing {
 			'title'  => __( 'Get All Users', 'example-plugin' ),
 			'href'   => wp_nonce_url( admin_url( '?process=all'), 'process' ),
 		) );
+        $wp_admin_bar->add_menu( array(
+          'parent' => 'example-plugin',
+          'id'     => 'example-plugin-sync',
+          'title'  => __( 'Sync Users', 'example-plugin' ),
+          'href'   => wp_nonce_url( admin_url( '?process=single'), 'process' ),
+        ) );
 	}
 	
 	/**
@@ -106,13 +130,15 @@ class Example_Background_Processing {
 	protected function handle_all() {
 		$records = $this->get_records();
 		
-		foreach ( $records as $_key => $record ) {
+		foreach ( $records as $_key => $record ) {		  
 			foreach ( $record['data'] as $data ) {
-						$firstName  = $data['firstName'];
-						$lastName   = $data['lastName'];
-						$email      = isset( $data['email'] ) ? $data['email'] : 'NOREPLY@no-email.org';
-						$user_array = array( $firstName, $lastName, $email );
-						$this->process_all->push_to_queue( $user_array );
+				$user_array = array( 
+				    $data['firstName'], 
+                    $data['lastName'], 
+                    $data['email'], 
+                    $data['ref'] 
+                );
+				$this->process_all->push_to_queue( $user_array );
 			}
 		}
 		
