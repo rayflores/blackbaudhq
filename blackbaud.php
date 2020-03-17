@@ -103,7 +103,7 @@ class WP_Blackbaudhq_User_Sync {
 	}
 
 
-	function render_tester_page() {
+	function render_tester_page( $user ) {
       global $wpdb;
       $total_response = array();
       require( plugin_dir_path( __FILE__ ) . 'utils/utils.php' );
@@ -146,64 +146,32 @@ class WP_Blackbaudhq_User_Sync {
       }
 
       // Initialize parameters
-      $categoryName = "Custom Testing Queries";
-//		$queryName    = "Website Access";
-      $queryName    = "Active Individuals";
+//      $ref = "INPUT_DATABASE_REF"; // example: 1234.0.567812
+      $ref = "12260.0.54276"; // example: 1234.0.567812
 
-      $request          = array();
-      $request["start"] = 0;
-      $request["count"] = 100;
-      $request["query"] = "$categoryName::$queryName";
+// Invoke getAccount method
+      echo "Calling getAccount method...";
+      $response = $nsc->call("getAccount", array($ref));
+      echo "Done<br><br>";
 
-      // Invoke getExistingQueryResults method
-      $first_response = array();
-      $response1 = $nsc->call( "getExistingQueryResults", array( $request ) );
-      $first_response['1'] = $response1;
-      // Did a soap fault occur?
-      checkStatus( $nsc );
+// Did a soap fault occur?
+      checkStatus($nsc);
 
-      // Attempt to retrieve next page results
-      if ( $response1['pages'] > 1 ) {
-        $hasMore = true;
-        $resp    = 2;
-        $following_response = array();
-        do {
-          // Invoke getNextQueryResults method
-          $response2 = $nsc->call( "getNextQueryResults", array() );
-          $following_response[$resp] = $response2;
-          // Did a soap fault occur?
-          checkStatus( $nsc );
+// Output result
 
-          // Invoke hasMoreQueryResults method
-          $hasMore = $nsc->call( "hasMoreQueryResults", array() );
-
-          // Did a soap fault occur?
-          checkStatus( $nsc );
-
-          $resp ++;
-
-        } while ( $hasMore );
+      $enabled = true; 
+      foreach ( $response['accountDefinedValues'] as $_key => $value ){
+          if ( $value['fieldName'] === 'Website Access' ) {
+               if ( $value['value'] !== 'Enabled' )  {
+                   $enabled = false;
+               }
+               
+          }
       }
-      $total_response = array_merge( $first_response, $following_response );
-//      return $total_response;
-      foreach ( $total_response as $_key => $record ) {
-        $user_array = array();
-        foreach ( $record['data'] as $data ) {
+      return $enabled;
 
-          $user_array = array(
-              $data['firstName'],
-              $data['lastName'],
-              $data['email'],
-              $data['ref']
-          );
-          echo '<pre>';
-          print_r( $user_array );
-          echo '</pre>';
-        }
-      }
-      // Call logout method
+    // Call logout method
       stopEtapestrySession($nsc);
-
     }
 		
 

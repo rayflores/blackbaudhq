@@ -102,7 +102,7 @@ class Example_Background_Processing {
           'parent' => 'example-plugin',
           'id'     => 'example-plugin-sync',
           'title'  => __( 'Sync Users', 'example-plugin' ),
-          'href'   => wp_nonce_url( admin_url( '?process=single'), 'process' ),
+          'href'   => wp_nonce_url( admin_url( '?process=sync'), 'process' ),
         ) );
 	}
 	
@@ -117,13 +117,24 @@ class Example_Background_Processing {
 		if ( ! wp_verify_nonce( $_GET['_wpnonce'], 'process') ) {
 			return;
 		}
-		
+      if ( 'sync' === $_GET['process'] ) {
+        $this->handle_sync();
+      }
 		if ( 'all' === $_GET['process'] ) {
 			$this->handle_all();
 		}
 	}
 
-	
+  /**
+   * Handle single
+   */
+  protected function handle_sync() {
+    $members = $this->get_members();
+    foreach ( $members as $member ) {
+      $this->process_single->data( array( 'ID' => $member->ID ) )->dispatch();
+    }
+    
+  }
 	/**
 	 * Handle all
 	 */
@@ -144,9 +155,20 @@ class Example_Background_Processing {
 		
 		$this->process_all->save()->dispatch();
 	}
-	
+  /**
+   * Get users - members role
+   */
+	protected function get_members(){
+	    $users = '';
+	    $args = array(
+	      'role__in' => 'members'      
+        );
+	    $users = get_users( $args );
+	    
+	    return $users;
+    }
 	/**
-	 * Get names
+	 * Get records
 	 *
 	 * @return array
 	 */
