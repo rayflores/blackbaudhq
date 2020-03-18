@@ -30,11 +30,11 @@ class WP_Example_Request extends WP_Async_Request {
 	protected function get_enabled( $id ) {
     global $wpdb;
     $total_response = array();
-    require( plugin_dir_path( __FILE__ ) . 'utils/utils.php' );
-    require( plugin_dir_path( __FILE__ ) . 'lib/nusoap.php' );
+    require( dirname( __FILE__ ) .'/../utils/utils.php' );
+    require( dirname( __FILE__ ) .'/../lib/nusoap.php' );
 
-    $databaseId = get_transient( 'bbhq_dbid' ) ? get_transient( 'bbhq_dbid' ) : 'NationalRenderersAssociationI';
-    $apiKey     = get_transient( 'bbhq_apikey' ) ? get_transient( 'bbhq_apikey' ) : 'QZ9ZNlbAubcoMYhDwrbOlnPbKem3K1f0D+LwUeJdsqw=';
+    $databaseId = 'NationalRenderersAssociationI';
+    $apiKey     = 'QZ9ZNlbAubcoMYhDwrbOlnPbKem3K1f0D+LwUeJdsqw=';
 
     // Set initial endpoint
     $endpoint = "https://sna.etapestry.com/v3messaging/service?WSDL";
