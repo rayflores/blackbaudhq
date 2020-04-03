@@ -1,11 +1,11 @@
 <?php
 /*
-Plugin Name: BlackbaudHQ Process Users
+Plugin Name: BlackbaudHQ Process/Check Enabled Members
 Plugin URI: 
 Description: 
 Author: rayflores
-Version: 0.1
-Author URI: 
+Version: 0.2
+Author URI: https://rayflores.com
 Text Domain: example-plugin
 Domain Path: /languages/
 */
