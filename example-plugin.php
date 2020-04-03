@@ -129,8 +129,7 @@ class Example_Background_Processing {
    * Handle single
    */
   protected function handle_sync() {
-    $enabled = $this->get_enabled( $_POST['ID'] );
-      
+     
     $members = $this->get_members();
     foreach ( $members as $member ) {
       $enabled = $this->get_enabled( $member->ID );
