@@ -13,7 +13,7 @@ Domain Path: /languages/
 class Example_Background_Processing {
 	
 	/**
-	 * @var WP_Example_Request
+	 * @var WP_Example_Process_Single
 	 */
 	protected $process_single;
 	
