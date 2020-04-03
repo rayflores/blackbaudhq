@@ -58,10 +58,10 @@ class Example_Background_Processing {
 		require_once plugin_dir_path( __FILE__ ) . 'classes/wp-background-process.php';
 		require_once plugin_dir_path( __FILE__ ) . 'class-logger.php';
 		require_once plugin_dir_path( __FILE__ ) . 'class-logger.php';
-		require_once plugin_dir_path( __FILE__ ) . 'async-requests/class-example-request.php';
 		require_once plugin_dir_path( __FILE__ ) . 'background-processes/class-example-process.php';
+		require_once plugin_dir_path( __FILE__ ) . 'background-processes/class-example-process-single.php';
 		
-		$this->process_single = new WP_Example_Request();
+		$this->process_single = new WP_Example_Process_Single();
 		$this->process_all    = new WP_Example_Process();
 	}
 	public function check_roles() {
@@ -129,9 +129,17 @@ class Example_Background_Processing {
    * Handle single
    */
   protected function handle_sync() {
+    $enabled = $this->get_enabled( $_POST['ID'] );
+      
     $members = $this->get_members();
     foreach ( $members as $member ) {
-      $this->process_single->data( array( 'ID' => $member->ID ) )->dispatch();
+      $enabled = $this->get_enabled( $member->ID );
+      $member_array = array( 
+                $member->ID, 
+                $enabled 
+      );          
+      $this->process_single->push_to_queue( $member_array );
+      
     }
     
   }
@@ -258,7 +266,74 @@ class Example_Background_Processing {
 		// Call logout method
 		stopEtapestrySession($nsc);
 	}
-	
+	protected function get_enabled( $id ) {
+      global $wpdb;
+      $total_response = array();
+      require( dirname( __FILE__ ) .'/../utils/utils.php' );
+      require( dirname( __FILE__ ) .'/../lib/nusoap.php' );
+
+      $databaseId = 'NationalRenderersAssociationI';
+      $apiKey     = 'QZ9ZNlbAubcoMYhDwrbOlnPbKem3K1f0D+LwUeJdsqw=';
+
+      // Set initial endpoint
+      $endpoint = "https://sna.etapestry.com/v3messaging/service?WSDL";
+
+      // Instantiate nusoap_client
+      $nsc = new nusoap_client( $endpoint, true );
+
+      // Did an error occur?
+      checkStatus( $nsc );
+
+      // Invoke apiKeyLogin method
+      $newEndpoint = $nsc->call( "apiKeyLogin", array( $databaseId, $apiKey ) );
+
+      // Did a soap fault occur?
+      checkStatus( $nsc );
+
+      // Determine if the apiKeyLogin method returned a value...this will occur
+      // when the database you are trying to access is located at a different
+      // environment that can only be accessed using the provided endpoint
+      if ( $newEndpoint != "" ) {
+
+        // Instantiate nusoap_client with different endpoint
+        $nsc = new nusoap_client( $newEndpoint, true );
+
+        // Did an error occur?
+        checkStatus( $nsc );
+
+        // Invoke apiKeyLogin method
+        $nsc->call( "apiKeyLogin", array( $databaseId, $apiKey ) );
+
+        // Did a soap fault occur?
+        checkStatus( $nsc );
+      }
+
+      // Initialize parameters
+//      $ref = "INPUT_DATABASE_REF"; // example: 1234.0.567812
+      $ref = get_user_meta( $id, 'ref', true ); // example: 1234.0.567812
+
+// Invoke getAccount method
+
+      $response = $nsc->call("getAccount", array($ref));
+
+
+// Did a soap fault occur?
+      checkStatus($nsc);
+
+// Output result
+
+      $enabled = true;
+      foreach ( $response['accountDefinedValues'] as $_key => $value ){
+        if ( $value['fieldName'] === 'Website Access' ) {
+          if ( $value['value'] !== 'Enabled' )  {
+            $enabled = false;
+          }
+
+        }
+      }
+      return $enabled;
+    }
+
 }
 
 new Example_Background_Processing();
